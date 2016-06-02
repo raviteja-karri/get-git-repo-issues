@@ -1,0 +1,82 @@
+<!doctype html>
+<html ng-app="myApp">
+  <head>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.4.7/angular.min.js"></script>
+    <script type="text/javascript">
+    	var app = angular.module('myApp', []);
+			app.controller('HomeController', function($scope, $http) {
+	    	$scope.group1 = 0;
+	    	$scope.group2 = 0;
+	    	$scope.group3 = 0;
+			  $scope.getIssues = function(){
+			  	if (!$scope.repoURL) {
+			  		alert('Please provide a valid repo URL');
+			  		return;
+			  	};
+			  	var reg = /https:\/\/github.com\/([A-Za-z0-9_\-\.])+\/([A-Za-z0-9_\-\.])+/;
+					console.log(reg.test($scope.repoURL));
+					if(!reg.test($scope.repoURL)){
+						alert('Invalid Repo URL.');
+						return;
+					};
+			  	var repoURL = $scope.repoURL.replace('https://github.com', 'https://api.github.com/repos')  + "/issues?state=open";
+			  	$http({
+			      method: "get",
+			      url: repoURL
+			    }).success(function(data){
+			    	$scope.group1 = 0;
+			    	$scope.group2 = 0;
+			    	$scope.group3 = 0;
+			  		//$scope.dataList = data;
+			  		var d = new Date();
+						var d2 = new Date();
+						var d3 = new Date();
+						var d2 = new Date();
+
+						d2.setHours(d.getHours() - 24);
+						d3.setDate(d.getDate() - 7);
+						for (var i = 0; i < data.length; i++) {console.log(data[i]);
+							data[i].created_at = new Date(data[i].created_at);
+							console.log(data[i]);
+							if (data[i].created_at.getTime() >= d2.getTime()) {
+								$scope.group1++;
+							} else if (data[i].created_at.getTime() < d2.getTime()
+								&& data[i].created_at.getTime() >= d3.getTime()) {
+								$scope.group2++;
+							} else{
+								$scope.group3++;
+							};
+						};
+			  	}).error(function(err, err1, err2){
+			  		alert(err.message);
+			  	});
+			  }
+			});
+    </script>
+  </head>
+  <body ng-controller="HomeController">
+    <div class="form-group">
+      <label class="col-sm-2 control-label">Github Repo</label>
+      <div class="col-sm-10">
+        <input type="text" class="form-control" ng-model="repoURL" ng-required="true">
+      </div>
+    </div>
+    <div class="form-group">
+      <div class="col-sm-4 col-sm-offset-2">
+        <button ng-click="getIssues()" class="btn btn-primary" type="submit">Get Issues</button>
+      </div>
+    </div>
+    <table>
+    	<tr>
+    		<td>Number of open issues that were opened in the last 24 hours</td>
+    		<td>Number of open issues that were opened more than 24 hours ago but less than 7 days ago</td>
+    		<td>Number of open issues that were opened more than 7 days ago </td>
+    	</tr>
+    	<tr>
+    		<td>{{group1}}</td>
+    		<td>{{group2}}</td>
+    		<td>{{group3}}</td>
+    	</tr>
+    </table>
+  </body>
+</html>
